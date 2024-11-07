@@ -4,7 +4,7 @@ Desafio técnico para os alunos da disciplina "Desenvolvimento Web 3"
 
 
 
-[Vídeo com a explicação]()
+[Vídeo com a explicação](https://youtu.be/cUF0HCShfYc)
 
 
 No ambiente Linux:
