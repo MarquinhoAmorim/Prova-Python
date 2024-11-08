@@ -37,7 +37,9 @@ class VagaModelTest(TestCase):
         VagaModel.objects.create(
             titulo='Suporte Júnior',
             empresa='Google',
-            telefone='9999999999',)
+            telefone='9999999999',
+            email='suporte@junior.com',
+            descricao='vaga para junior')
         self.vaga = VagaModel.objects.first()
 
     def test_str(self):
@@ -51,23 +53,25 @@ class VagaModelTest(TestCase):
         self.assertEqual(data.titulo, 'Suporte Júnior')
         self.assertEqual(data.empresa, 'Google')
         self.assertEqual(data.telefone, '9999999999')
+        self.assertEqual(data.email, 'suporte@junior.com')
+        self.assertEqual(data.descricao, 'vaga para junior')
 
 
 class VagaFormTest(TestCase):
     def test_unbounded_fields(self):
         form = VagaForm()
-        expected = ['titulo','empresa', 'telefone']
+        expected = ['titulo','empresa', 'telefone', 'descricao', 'email']
         self.assertSequenceEqual(expected, list(form.fields))
 
     def test_form_all_OK(self):
-        dados = dict(titulo='Suporte Júnior', empresa='Google', telefone='1999998888')
+        dados = dict(titulo='Suporte Júnior', empresa='Google', telefone='1999998888', email='suporte@junior.com', descricao='vaga para junior')
         form = VagaForm(dados)
         errors = form.errors
         self.assertEqual({}, errors)
         self.assertEqual(form.cleaned_data['titulo'], 'SUPORTE JÚNIOR')
 
     def test_form_wrong_DDD(self):
-        dados = dict(titulo='Suporte Júnior', empresa='Google', telefone='9999998888')
+        dados = dict(titulo='Suporte Júnior', empresa='Google', telefone='99998888', email='suporte@junior.com', descricao='vaga para junior')
         form = VagaForm(dados)
         errors = form.errors
         errors_list = errors['telefone']
@@ -75,11 +79,11 @@ class VagaFormTest(TestCase):
         self.assertEqual([msg], errors_list)
 
     def test_form_wrong_companyName(self):
-        dados = dict(titulo='Suporte Júnior', empresa='XP', telefone='9999998888')
+        dados = dict(titulo='Suporte Júnior', empresa='x', telefone='9999998888', email='suporte@xpinvestimento.com', descricao='vaga para assessor de investimento')
         form = VagaForm(dados)
         errors = form.errors
         errors_list = errors['empresa']
-        msg = 'Empresa precisa ter ao menos três caracteres'
+        msg = 'Empresa precisa ter ao menos dois caracteres'
         self.assertEqual([msg], errors_list)
 
     def test_form_fail_1(self):
@@ -95,6 +99,22 @@ class VagaFormTest(TestCase):
         form = VagaForm(dados)
         errors = form.errors
         errors_list = errors['telefone']
+        msg = 'This field is required.'
+        self.assertEqual([msg], errors_list)
+
+    def test_form_fail_3(self):
+        dados = dict(email='suporte@junior.com')
+        form = VagaForm(dados)
+        errors = form.errors
+        errors_list = errors['descricao']
+        msg = 'This field is required.'
+        self.assertEqual([msg], errors_list)
+
+    def test_form_fail_4(self):
+        dados = dict(descricao='vaga para desenvolvedor QA')
+        form = VagaForm(dados)
+        errors = form.errors
+        errors_list = errors['email']
         msg = 'This field is required.'
         self.assertEqual([msg], errors_list)
 
@@ -118,7 +138,9 @@ class Create_POST_OK_Test(TestCase):
     def setUp(self):
         data = {'titulo': 'Suporte Júnior',
                 'empresa': 'Google',
-                'telefone': '19-98888-7777',}
+                'telefone': '19-98888-7777',
+                'email': 'suporte@junior.com',
+                'descricao': 'vaga para desenvolvedor'}
         self.resp = self.client.post(r('core:create'), data, follow=True)
         self.resp2 = self.client.post(r('core:create'), data)
 
@@ -134,7 +156,9 @@ class Create_POST_Fail_Test(TestCase):
     def setUp(self):
         data = {'titulo': 'Suporte Júnior',
                 'empresa': 'XP',
-                'telefone': '9988887777',}
+                'telefone': '9988887777',
+                'email': 'suporte@xpinvestimento.com',
+                'descricao': 'vaga para CEO Araras'}
         self.resp = self.client.post(r('core:create'), data, follow=True)
         self.resp2 = self.client.post(r('core:create'), data)
 
@@ -169,7 +193,9 @@ class Read_POST_OK_Test(TestCase):
     def setUp(self):
         data = {'titulo': 'Suporte Júnior',
                 'empresa': 'Google',
-                'telefone': '19-98888-7777',}
+                'telefone': '19-98888-7777',
+                'email': 'suporte@junior.com',
+                'descricao': 'vaga para junior FATEC'}
         VagaModel.objects.create(**data)
         data = {'id':1}
         self.resp = self.client.post(r('core:read'), data, follow=True)
@@ -248,7 +274,9 @@ class Update_POST_OK_Test(TestCase):
     def setUp(self):
         data = {'titulo': 'Suporte Júnior',
                 'empresa': 'Google',
-                'telefone': '19-98888-7777',}
+                'telefone': '19-98888-7777',
+                'email': 'suporte@junior.com',
+                'descricao': 'vaga aberta para todos'}
         VagaModel.objects.create(**data)
         data = {'id':1}
         self.resp = self.client.post(r('core:update'), data, follow=True)
@@ -321,11 +349,16 @@ class Confirm_Update_POST_OK_Test(TestCase):
     def setUp(self):
         data = {'titulo': 'Suporte Júnior',
                 'empresa': 'Google',
-                'telefone': '19-98888-7777',}
+                'telefone': '19-98888-7777',
+                'email': 'suporte@junior.com',
+                'descricao': 'vaga da empresa google'}
         VagaModel.objects.create(**data)
         data = {'titulo': 'Suporte Sênior',
                 'empresa': 'Google Inc',
-                'telefone': '19-98888-9999','id':1}
+                'telefone': '19-98888-9999',
+                'email': 'suporte@teste.com',
+                'descricao': 'atualizando a vaga da Google',
+                'id':1}
         self.resp = self.client.post(r('core:confirm_update'), data, follow=True)
         self.resp2 = self.client.post(r('core:confirm_update'), data)
 
@@ -346,9 +379,10 @@ class Confirm_Update_POST_Fail_Test(TestCase):
     def setUp(self):
         data = {'titulo': 'Suporte Júnior',
                 'empresa': 'Google',
-                'telefone': '19-98888-7777',}
+                'telefone': '19-98888-7777',
+                'descricao': 'error'}
         VagaModel.objects.create(**data)
-        data = {'telefone': '19-98888-9999','id':1}
+        data = {'telefone': '19-98888-9999','id':1,'descricao': 'error'}
         self.resp = self.client.post(r('core:confirm_update'), data, follow=True)
         self.resp2 = self.client.post(r('core:confirm_update'), data)
 
@@ -381,7 +415,9 @@ class Delete_POST_OK_Test(TestCase):
     def setUp(self):
         data = {'titulo': 'Suporte Júnior',
                 'empresa': 'Google',
-                'telefone': '19-98888-7777',}
+                'telefone': '19-98888-7777',
+                'email': 'suporte@google.com',
+                'descricao': 'vaga para todos da FATEC'}
         VagaModel.objects.create(**data)
         data = {'id':1}
         self.resp = self.client.post(r('core:delete'), data, follow=True)
@@ -399,7 +435,9 @@ class Delete_POST_Fail_Test(TestCase):
     def setUp(self):
         data = {'titulo': 'Suporte Júnior',
                 'empresa': 'Google',
-                'telefone': '19-98888-7777',}
+                'telefone': '19-98888-7777',
+                'email': 'suporte@google.com',
+                'descricao': 'vaga para todos da FATEC'}
         VagaModel.objects.create(**data)
         data = {'id':2}
         self.resp = self.client.post(r('core:delete'), data, follow=True)

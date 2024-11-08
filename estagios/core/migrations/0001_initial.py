@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('titulo', models.CharField(max_length=150, verbose_name='Título da Vaga')),
                 ('empresa', models.CharField(max_length=150, verbose_name='Empresa')),
-                ('telefone', models.CharField(max_length=20, verbose_name='Telefone')),
+                ('telefone', models.CharField(max_length=20, verbose_name='Telefone'))
             ],
         ),
     ]
